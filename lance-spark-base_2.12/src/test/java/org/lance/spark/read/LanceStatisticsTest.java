@@ -17,6 +17,8 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -77,36 +79,24 @@ public class LanceStatisticsTest {
     assertEquals(50000, stats.sizeInBytes().getAsLong());
   }
 
-  @Test
-  public void testEstimatePostPruningByRowsHandlesUnevenFragments() {
-    LanceStatistics stats = LanceStatistics.estimatePostPruningByRows(1_000_020, 10_000_200, 20);
+  @ParameterizedTest(name = "{index}: totalRows={0}, survivingRows={2}")
+  @CsvSource({
+    "1000020, 10000200, 20, 20, 200",
+    "0, 128, 0, 0, 128",
+    "100, 1000, 0, 0, 0",
+    "100, 1000, 100, 100, 1000"
+  })
+  public void testEstimatePostPruningByRows(
+      long totalRows,
+      long totalFilesSize,
+      long survivingRows,
+      long expectedRows,
+      long expectedSize) {
+    LanceStatistics stats =
+        LanceStatistics.estimatePostPruningByRows(totalRows, totalFilesSize, survivingRows);
 
-    assertEquals(20, stats.numRows().getAsLong());
-    assertEquals(200, stats.sizeInBytes().getAsLong());
-  }
-
-  @Test
-  public void testEstimatePostPruningByRowsKeepsEmptyDatasetSize() {
-    LanceStatistics stats = LanceStatistics.estimatePostPruningByRows(0, 128, 0);
-
-    assertEquals(0, stats.numRows().getAsLong());
-    assertEquals(128, stats.sizeInBytes().getAsLong());
-  }
-
-  @Test
-  public void testEstimatePostPruningByRowsWithNoSurvivors() {
-    LanceStatistics stats = LanceStatistics.estimatePostPruningByRows(100, 1_000, 0);
-
-    assertEquals(0, stats.numRows().getAsLong());
-    assertEquals(0, stats.sizeInBytes().getAsLong());
-  }
-
-  @Test
-  public void testEstimatePostPruningByRowsWithAllRowsSurviving() {
-    LanceStatistics stats = LanceStatistics.estimatePostPruningByRows(100, 1_000, 100);
-
-    assertEquals(100, stats.numRows().getAsLong());
-    assertEquals(1_000, stats.sizeInBytes().getAsLong());
+    assertEquals(expectedRows, stats.numRows().getAsLong());
+    assertEquals(expectedSize, stats.sizeInBytes().getAsLong());
   }
 
   @Test
