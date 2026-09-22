@@ -253,8 +253,6 @@ public class LanceScanBuilder
       long projectedRows = summary.getTotalRows();
       long projectedFullSize = summary.getTotalFilesSize();
       if (survivingFragmentIds != null && !scanPlan.getFragmentRowCounts().isEmpty()) {
-        // Zonemap stats can still contain retired fragment IDs. Only row counts from the live
-        // fragments in this scan plan may contribute to the estimate.
         long survivingRows =
             survivingFragmentIds.stream()
                 .mapToLong(

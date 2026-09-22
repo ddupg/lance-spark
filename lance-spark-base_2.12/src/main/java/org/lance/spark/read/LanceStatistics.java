@@ -67,18 +67,7 @@ public class LanceStatistics implements Statistics, Serializable {
     return new LanceStatistics((long) (totalRows * ratio), (long) (totalFilesSize * ratio));
   }
 
-  /**
-   * Estimate post-pruning statistics from the exact row count of surviving fragments.
-   *
-   * <p>The row count is exact for the fragments selected by planning. File size remains an estimate
-   * because the scan plan does not carry per-fragment byte sizes, so it is scaled by the
-   * surviving-row ratio. Invalid or non-selective inputs conservatively retain full-table stats.
-   *
-   * @param totalRows total rows in the dataset
-   * @param totalFilesSize total file size in bytes
-   * @param survivingRows exact row count across surviving fragments
-   * @return row-weighted post-pruning statistics
-   */
+  /** Estimates post-pruning statistics using exact surviving rows and row-weighted bytes. */
   static LanceStatistics estimatePostPruningByRows(
       long totalRows, long totalFilesSize, long survivingRows) {
     if (totalRows <= 0 || survivingRows >= totalRows) {
