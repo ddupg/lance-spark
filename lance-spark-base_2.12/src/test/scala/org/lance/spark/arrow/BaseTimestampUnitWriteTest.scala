@@ -158,7 +158,7 @@ abstract class BaseTimestampUnitWriteTest {
       field("map_" + f.getName, new ArrowType.Map(false), entries)
     }
     Seq(
-      schema(fields :+ field("empty_timezone", new ArrowType.Timestamp(TimeUnit.SECOND, ""))),
+      schema(fields),
       schema(
         Seq(field("payload", ArrowType.Struct.INSTANCE, fields: _*)) ++ lists ++ maps)).foreach {
       original =>
@@ -166,6 +166,11 @@ abstract class BaseTimestampUnitWriteTest {
           original,
           LanceArrowUtils.toArrowSchema(LanceArrowUtils.fromArrowSchema(original), "UTC", false))
     }
+    val emptyTimezone =
+      schema(Seq(field("empty_timezone", new ArrowType.Timestamp(TimeUnit.SECOND, ""))))
+    assertEquals(
+      schema(Seq(field("empty_timezone", new ArrowType.Timestamp(TimeUnit.SECOND, null)))),
+      LanceArrowUtils.toArrowSchema(LanceArrowUtils.fromArrowSchema(emptyTimezone), "UTC", false))
     val ordinary = new StructType().add("ntz", TimestampNTZType).add("tz", TimestampType)
     val arrow = LanceArrowUtils.toArrowSchema(ordinary, "UTC", false)
     assertEquals(
@@ -196,7 +201,7 @@ abstract class BaseTimestampUnitWriteTest {
         (Seq(id.toString) ++ fields.map(sqlValue(_, value))).mkString("(", ",", ")")
       }
       spark.sql(s"INSERT INTO $table VALUES " + rowsToInsert.mkString(","))
-      // Reload the existing target for a second append.
+      // Verify a separate append with all timestamp columns NULL preserves the target schema.
       spark.sql(s"INSERT INTO $table SELECT " + (Seq(inputs.size.toString) ++ fields.map(sqlValue(
         _,
         null))).mkString(","))

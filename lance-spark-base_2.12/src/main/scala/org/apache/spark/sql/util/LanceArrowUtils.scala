@@ -53,8 +53,6 @@ object LanceArrowUtils {
   val ARROW_FIXED_SIZE_BINARY_BYTE_WIDTH_KEY =
     FixedSizeBinaryUtils.ARROW_FIXED_SIZE_BINARY_BYTE_WIDTH_KEY
 
-  // Preserve the original Arrow timestamp type without adding synthetic metadata to
-  // persisted fields.
   val LANCE_TIMESTAMP_UNIT_KEY = "_lance.timestamp_unit"
   val LANCE_TIMESTAMP_TIMEZONE_KEY = "_lance.timestamp_timezone"
 
@@ -518,7 +516,7 @@ object LanceArrowUtils {
         val timezone = if (dt == TimestampType) {
           Option(originalTimezone).filter(_.nonEmpty).getOrElse(timeZoneId)
         } else {
-          Option(originalTimezone).filter(_.isEmpty).orNull
+          null
         }
         val fieldType =
           new FieldType(nullable, new ArrowType.Timestamp(unit, timezone), null, meta.asJava)
