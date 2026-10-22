@@ -56,7 +56,6 @@ object LanceArrowUtils {
   val LANCE_TIMESTAMP_UNIT_KEY = "_lance.timestamp_unit"
   val LANCE_TIMESTAMP_TIMEZONE_KEY = "_lance.timestamp_timezone"
 
-  // Preserve the original UInt32 type while Spark represents its values as LongType.
   val LANCE_UINT32_KEY = "_lance.uint32"
 
   // Namespaced keys used to embed child Spark Metadata on a parent StructField when the
